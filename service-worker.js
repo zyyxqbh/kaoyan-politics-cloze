@@ -1,4 +1,4 @@
-const CACHE_NAME="politics-focus-f2775acdbb21";
+const CACHE_NAME="politics-focus-d36d8e55761b";
 const OFFLINE_FILES=[
   './',
   './basic-cloze-data.js',
