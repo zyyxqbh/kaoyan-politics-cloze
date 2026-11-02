@@ -1,0 +1,12 @@
+{
+  "name": "考研政治重点知识互动复习",
+  "short_name": "政治填空",
+  "description": "基于2027肖1000重点知识的核心回忆、反向定位与易混关系填空",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f5f7",
+  "theme_color": "#17324d"
+}
+
