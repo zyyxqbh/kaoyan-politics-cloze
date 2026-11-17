@@ -14,17 +14,17 @@
 <main class="wrap">
   <div class="topline"><span class="tag">2027 肖八 · 全选项覆盖</span><a class="back" href="index.html">返回重点题库</a></div>
   <h1>肖八全选项知识填空</h1>
-  <p class="lead">不是按第一套到第八套重做选择题。每道选择题的 A、B、C、D 都进入覆盖审计，再按知识所属章节重新排列：入选项练规范结论，未入选项练决定性边界。</p>
+  <p class="lead">肖八的 264 道选择题和 1056 个选项只用来界定知识范围。题库先提取、合并知识点，再按“科目 → 章节 → 最小知识模块”重新出题；正常复习时不再背原选项和解析话术。</p>
   <section class="audit" aria-label="覆盖审计">
     <div><strong id="questionCount">—</strong><span>道选择题</span></div>
     <div><strong id="optionCount">—</strong><span>个选项覆盖位</span></div>
-    <div><strong id="selectedCount">—</strong><span>个入选项</span></div>
-    <div><strong id="distractorCount">—</strong><span>个未入选项</span></div>
+    <div><strong id="moduleCount">—</strong><span>个最小知识模块</span></div>
+    <div><strong id="trainingCount">—</strong><span>道重新组织的填空</span></div>
   </section>
   <nav class="book-tabs" id="bookTabs" aria-label="选择科目"></nav>
   <section class="book-head"><p>当前科目</p><h2 id="bookTitle">正在载入…</h2></section>
   <section class="grid" id="chapterGrid"></section>
-  <footer class="footer">题目按章节与知识关系排列，套卷题号只保留在“来源核对”中，不参与复习顺序。选项本身正确但不回答设问时，统一标为“不符合题意”，不误判为知识错误。</footer>
+  <footer class="footer">每个模块只围绕一个判断中心。核心表述、关系对应和边界辨析只在有独立知识依据时出题，不为凑轮次重复改写。套卷题号仅用于来源核对。</footer>
   <p class="footer" id="offline-status">正在准备离线内容…</p>
 </main>
 <script src="xiao8-data.js"></script>
@@ -32,10 +32,10 @@
 const data=XIAO8_CLOZE,tabs=document.getElementById('bookTabs'),grid=document.getElementById('chapterGrid'),title=document.getElementById('bookTitle');
 document.getElementById('questionCount').textContent=data.audit.questions;
 document.getElementById('optionCount').textContent=data.audit.optionSlots;
-document.getElementById('selectedCount').textContent=data.audit.selectedOptions;
-document.getElementById('distractorCount').textContent=data.audit.distractorOptions;
+document.getElementById('moduleCount').textContent=data.audit.modules;
+document.getElementById('trainingCount').textContent=data.audit.trainingQuestions;
 for(const book of data.books){if(!book.chapterIds.length)continue;const button=document.createElement('button');button.className='book-tab';button.type='button';button.dataset.book=book.id;button.innerHTML='<span></span><small></small>';button.querySelector('span').textContent=book.shortTitle;button.querySelector('small').textContent=book.chapterIds.length+' 章';tabs.append(button)}
-function show(bookId){const book=data.books.find(item=>item.id===bookId)||data.books.find(item=>item.chapterIds.length);title.textContent=book.title;grid.replaceChildren();for(const chapterId of book.chapterIds){const chapter=data.chapters.find(item=>item.id===chapterId);if(!chapter)continue;const card=document.createElement('a');card.className='card';card.href='xiao8-study.html?chapter='+encodeURIComponent(chapter.id);const count=document.createElement('span');count.className='count';count.textContent=chapter.all.length+' 题';const heading=document.createElement('h3');heading.textContent=chapter.title;const detail=document.createElement('p');detail.textContent=chapter.correct.length+' 入选项 · '+chapter.wrong.length+' 未入选项';const go=document.createElement('span');go.className='go';go.textContent='开始复习 →';card.append(count,heading,detail,go);grid.append(card)}for(const button of tabs.children)button.classList.toggle('active',button.dataset.book===book.id);history.replaceState(null,'','#'+book.id)}
+function show(bookId){const book=data.books.find(item=>item.id===bookId)||data.books.find(item=>item.chapterIds.length);title.textContent=book.title;grid.replaceChildren();for(const chapterId of book.chapterIds){const chapter=data.chapters.find(item=>item.id===chapterId);if(!chapter)continue;const card=document.createElement('a');card.className='card';card.href='xiao8-study.html?chapter='+encodeURIComponent(chapter.id);const totals=chapter.modules.reduce((sum,module)=>{sum.core+=module.core.length;sum.relation+=module.relation.length;sum.boundary+=module.boundary.length;return sum},{core:0,relation:0,boundary:0});const count=document.createElement('span');count.className='count';count.textContent=chapter.modules.length+' 个知识模块';const heading=document.createElement('h3');heading.textContent=chapter.title;const detail=document.createElement('p');detail.textContent=(totals.core+totals.relation+totals.boundary)+' 题 · 核心 '+totals.core+' · 关系 '+totals.relation+' · 边界 '+totals.boundary;const go=document.createElement('span');go.className='go';go.textContent='开始复习 →';card.append(count,heading,detail,go);grid.append(card)}for(const button of tabs.children)button.classList.toggle('active',button.dataset.book===book.id);history.replaceState(null,'','#'+book.id)}
 tabs.addEventListener('click',event=>{const button=event.target.closest('[data-book]');if(button)show(button.dataset.book)});const requested=location.hash.slice(1);show(data.books.some(book=>book.id===requested&&book.chapterIds.length)?requested:data.books.find(book=>book.chapterIds.length).id);
 </script>
 <script type="module" src="offline-init.js"></script>
