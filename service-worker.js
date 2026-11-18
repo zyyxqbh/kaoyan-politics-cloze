@@ -1,4 +1,4 @@
-const CACHE_NAME="politics-focus-xiao8-keywords-20261117";
+const CACHE_NAME="politics-focus-source-units-1e6891a35c8f";
 const OFFLINE_FILES=[
   './',
   './basic-cloze-data.js',
@@ -43,7 +43,20 @@ const OFFLINE_FILES=[
   './xiChapter9.html',
   './xiIntro.html'
 ];
-self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(OFFLINE_FILES)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(names=>Promise.all(names.filter(name=>name!==CACHE_NAME).map(name=>caches.delete(name)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;const url=new URL(event.request.url);if(url.origin!==self.location.origin)return;event.respondWith(caches.match(event.request,{ignoreSearch:true}).then(cached=>cached||fetch(event.request).then(response=>{if(response.ok)caches.open(CACHE_NAME).then(cache=>cache.put(event.request,response.clone()));return response}).catch(()=>event.request.mode==='navigate'?caches.match('./'):Promise.reject(new Error('Offline resource unavailable')))))});
-
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(OFFLINE_FILES.map(path=>new Request(path,{cache:'reload'})))).then(()=>self.skipWaiting())));
+self.addEventListener('activate',event=>event.waitUntil((async()=>{
+  const names=await caches.keys();
+  const old=names.filter(name=>name.startsWith('politics-')&&name!==CACHE_NAME);
+  await Promise.all(old.map(name=>caches.delete(name)));
+  await self.clients.claim();
+  if(old.length){for(const client of await self.clients.matchAll({type:'window'})){
+    if(client.url.startsWith(self.registration.scope))client.navigate(client.url).catch(()=>{});
+  }}
+})()));
+self.addEventListener('fetch',event=>{
+  if(event.request.method!=='GET'||!event.request.url.startsWith(self.registration.scope))return;
+  event.respondWith(caches.open(CACHE_NAME).then(cache=>cache.match(event.request,{ignoreSearch:true}).then(cached=>cached||fetch(event.request).then(response=>{
+    if(response.ok)event.waitUntil(cache.put(event.request,response.clone()));
+    return response;
+  }).catch(()=>event.request.mode==='navigate'?cache.match('./'):Promise.reject(new Error('Offline resource unavailable'))))));
+});
